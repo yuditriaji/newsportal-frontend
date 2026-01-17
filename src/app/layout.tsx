@@ -34,10 +34,12 @@ export default function RootLayout({
         className={`${newsreader.variable} ${inter.variable} antialiased min-h-screen`}
       >
         <Header />
-        <main className="max-w-7xl mx-auto px-6 py-10">
-          {children}
-        </main>
-        <Sidebar />
+        <div className="flex max-w-7xl mx-auto w-full min-h-screen">
+          <main className="flex-1 w-full min-w-0 px-6 py-10 border-r border-[var(--border)]">
+            {children}
+          </main>
+          <Sidebar />
+        </div>
         <Footer />
       </body>
     </html>
