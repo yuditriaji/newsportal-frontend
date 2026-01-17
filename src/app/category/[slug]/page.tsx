@@ -112,7 +112,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     </p>
                 </div>
             ) : (
-                <ArticleGrid articles={formattedArticles} layout="default" />
+                <ArticleGrid articles={formattedArticles} layout="grid" />
             )}
         </div>
     );

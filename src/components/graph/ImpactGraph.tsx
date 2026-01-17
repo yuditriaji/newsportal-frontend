@@ -87,7 +87,7 @@ function createEdgesFromConnections(connections: Connection[]): Edge[] {
         target: conn.target,
         label: conn.relationship,
         type: 'smoothstep',
-        animated: conn.weight && conn.weight > 0.7,
+        animated: Boolean(conn.weight && conn.weight > 0.7),
         style: {
             stroke: '#94a3b8',
             strokeWidth: Math.max(1, (conn.weight || 0.5) * 3),
