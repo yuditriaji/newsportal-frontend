@@ -52,7 +52,7 @@ export async function signOut() {
     redirect('/login');
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(): Promise<void> {
     const supabase = await createClient();
 
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -63,7 +63,7 @@ export async function signInWithGoogle() {
     });
 
     if (error) {
-        return { error: error.message };
+        redirect(`/login?error=${encodeURIComponent(error.message)}`);
     }
 
     if (data.url) {
@@ -71,7 +71,7 @@ export async function signInWithGoogle() {
     }
 }
 
-export async function signInWithGithub() {
+export async function signInWithGithub(): Promise<void> {
     const supabase = await createClient();
 
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -82,7 +82,7 @@ export async function signInWithGithub() {
     });
 
     if (error) {
-        return { error: error.message };
+        redirect(`/login?error=${encodeURIComponent(error.message)}`);
     }
 
     if (data.url) {
