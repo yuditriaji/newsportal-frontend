@@ -1,101 +1,113 @@
-'use client';
+import { createClient } from '@/lib/supabase/server';
+import { ImpactMapClient } from './client';
 
-import { ImpactWeb, demoNodes, demoEdges } from '@/components/graph/ImpactWeb';
+export const dynamic = 'force-dynamic';
 
-export default function ImpactMapPage() {
+async function getEntitiesWithConnections() {
+    const supabase = await createClient();
+
+    // Get entities with article counts
+    const { data: entities, error: entitiesError } = await supabase
+        .from('entities')
+        .select(`
+      id,
+      name,
+      type,
+      article_entities (count)
+    `)
+        .limit(30);
+
+    if (entitiesError) {
+        console.error('Error fetching entities:', entitiesError);
+        return { entities: [], connections: [] };
+    }
+
+    // Transform entities
+    const transformedEntities = (entities || []).map((e: any) => ({
+        id: e.id,
+        name: e.name,
+        type: e.type,
+        articleCount: e.article_entities?.[0]?.count || 0,
+    }));
+
+    // Get articles with multiple entities to find connections
+    const { data: articleEntities, error: connError } = await supabase
+        .from('article_entities')
+        .select('article_id, entity_id')
+        .limit(200);
+
+    if (connError) {
+        console.error('Error fetching connections:', connError);
+        return { entities: transformedEntities, connections: [] };
+    }
+
+    // Build connections from co-occurring entities in articles
+    const articleToEntities: Record<string, string[]> = {};
+    (articleEntities || []).forEach((ae: any) => {
+        if (!articleToEntities[ae.article_id]) {
+            articleToEntities[ae.article_id] = [];
+        }
+        articleToEntities[ae.article_id].push(ae.entity_id);
+    });
+
+    const connectionMap: Record<string, number> = {};
+    Object.values(articleToEntities).forEach((entityIds) => {
+        if (entityIds.length > 1) {
+            for (let i = 0; i < entityIds.length; i++) {
+                for (let j = i + 1; j < entityIds.length; j++) {
+                    const key = [entityIds[i], entityIds[j]].sort().join('-');
+                    connectionMap[key] = (connectionMap[key] || 0) + 1;
+                }
+            }
+        }
+    });
+
+    // Create connections array with weights
+    const connections = Object.entries(connectionMap)
+        .filter(([_, count]) => count >= 1)
+        .map(([key, count]) => {
+            const [source, target] = key.split('-');
+            return {
+                source,
+                target,
+                weight: Math.min(count / 5, 1), // Normalize weight
+            };
+        })
+        .slice(0, 50); // Limit connections
+
+    return { entities: transformedEntities, connections };
+}
+
+export default async function ImpactMapPage() {
+    const { entities, connections } = await getEntitiesWithConnections();
+
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+        <div className="h-[calc(100vh-200px)]">
+            <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-[var(--foreground)]">Impact Map</h1>
-                    <p className="text-[var(--muted-foreground)]">
-                        Visualize how events connect and cascade across sectors
+                    <h1 className="text-3xl font-bold">Impact Map</h1>
+                    <p className="text-[var(--muted-foreground)] font-sans text-sm mt-1">
+                        Visualize connections between entities across news events
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    {/* Sector filters */}
-                    <div className="flex gap-1 p-1 bg-[var(--muted)] rounded-lg">
-                        {['All', 'Economic', 'Geopolitical', 'Supply Chain'].map((filter, i) => (
-                            <button
-                                key={filter}
-                                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${i === 0
-                                        ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
-                                        : 'text-[var(--muted-foreground)] hover:bg-[var(--card)]'
-                                    }`}
-                            >
-                                {filter}
-                            </button>
-                        ))}
-                    </div>
-                    {/* Time range */}
-                    <select className="px-3 py-1.5 text-sm bg-[var(--card)] border border-[var(--border)] rounded-lg text-[var(--foreground)]">
-                        <option>Last 24 hours</option>
-                        <option>Last 7 days</option>
-                        <option>Last 30 days</option>
-                        <option>All time</option>
-                    </select>
+                <div className="text-sm font-sans text-[var(--muted-foreground)]">
+                    {entities.length} entities • {connections.length} connections
                 </div>
             </div>
 
-            {/* Legend */}
-            <div className="flex items-center gap-6 p-4 rounded-lg bg-[var(--card)] border border-[var(--border)]">
-                <span className="text-sm font-medium text-[var(--muted-foreground)]">Node Types:</span>
-                {[
-                    { label: 'Event', color: '#ef4444' },
-                    { label: 'Commodity', color: '#f59e0b' },
-                    { label: 'Impact', color: '#3b82f6' },
-                    { label: 'Region', color: '#a855f7' },
-                ].map((type) => (
-                    <div key={type.label} className="flex items-center gap-2">
-                        <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: type.color }}
-                        />
-                        <span className="text-sm text-[var(--foreground)]">{type.label}</span>
-                    </div>
-                ))}
-                <div className="flex-1" />
-                <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
-                    <span>🔴 Animated = Active connection</span>
-                </div>
-            </div>
-
-            {/* Graph container */}
-            <div className="h-[calc(100vh-280px)]">
-                <ImpactWeb
-                    initialNodes={demoNodes}
-                    initialEdges={demoEdges}
-                    onNodeClick={(node) => console.log('Clicked node:', node)}
-                />
-            </div>
-
-            {/* Side panel placeholder */}
-            <div className="fixed right-6 top-24 w-80 p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] shadow-xl">
-                <h3 className="font-semibold text-[var(--foreground)] mb-3">
-                    🌾 Russia-Ukraine Conflict
-                </h3>
-                <p className="text-sm text-[var(--muted-foreground)] mb-4">
-                    Ongoing conflict affecting global commodity markets and geopolitical relations.
-                </p>
-                <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-[var(--muted-foreground)]">Impact Score</span>
-                        <span className="font-medium text-[var(--destructive)]">High (8.5/10)</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-[var(--muted-foreground)]">Connected Events</span>
-                        <span className="font-medium text-[var(--foreground)]">15</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-[var(--muted-foreground)]">Downstream Effects</span>
-                        <span className="font-medium text-[var(--foreground)]">42</span>
+            {entities.length === 0 ? (
+                <div className="flex items-center justify-center h-96 border border-dashed border-[var(--border)] rounded-lg">
+                    <div className="text-center">
+                        <span className="text-6xl mb-4 block">🌐</span>
+                        <h3 className="text-xl font-bold mb-2">No entities yet</h3>
+                        <p className="text-[var(--muted-foreground)] font-sans text-sm max-w-md">
+                            Entities will appear here after news articles are ingested and processed by AI
+                        </p>
                     </div>
                 </div>
-                <button className="w-full mt-4 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg text-sm font-medium hover:opacity-90">
-                    Open Investigation
-                </button>
-            </div>
+            ) : (
+                <ImpactMapClient entities={entities} connections={connections} />
+            )}
         </div>
     );
 }
