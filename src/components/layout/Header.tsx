@@ -2,61 +2,107 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const navItems = [
+    { href: '/', label: 'Global Impacts' },
+    { href: '/geopolitics', label: 'Geopolitics' },
+    { href: '/trade', label: 'Trade Routes' },
+    { href: '/technology', label: 'Technology' },
+    { href: '/archive', label: 'Archives' },
+];
 
 export function Header() {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [isSearchFocused, setIsSearchFocused] = useState(false);
+    const pathname = usePathname();
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+    // Get current date in editorial format
+    const currentDate = new Intl.DateTimeFormat('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    }).format(new Date());
 
     return (
-        <header className="fixed top-0 left-64 right-0 z-30 h-16 bg-[var(--background)] border-b border-[var(--border)]">
-            <div className="flex h-full items-center justify-between px-6">
-                {/* Search */}
-                <div className="flex-1 max-w-xl">
-                    <div
-                        className={`relative flex items-center rounded-lg border ${isSearchFocused ? 'border-[var(--primary)]' : 'border-[var(--border)]'
-                            } bg-[var(--card)] transition-colors`}
-                    >
-                        <span className="pl-4 text-[var(--muted-foreground)]">🔍</span>
-                        <input
-                            type="text"
-                            placeholder="Search news, entities, investigations..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onFocus={() => setIsSearchFocused(true)}
-                            onBlur={() => setIsSearchFocused(false)}
-                            className="w-full bg-transparent px-3 py-2.5 text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none"
-                        />
-                        <kbd className="hidden sm:inline-flex mr-3 px-2 py-1 text-xs bg-[var(--muted)] rounded text-[var(--muted-foreground)]">
-                            ⌘K
-                        </kbd>
+        <header className="bg-white border-b border-[var(--border)] sticky top-0 z-50">
+            {/* Top bar */}
+            <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+                {/* Left: Menu + Date */}
+                <div className="flex items-center gap-6">
+                    <button className="text-[var(--foreground)] hover:text-[var(--primary)]">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <div className="text-xs font-bold uppercase tracking-widest font-sans border-r border-[var(--border)] pr-6 text-[var(--muted-foreground)]">
+                        {currentDate}
                     </div>
                 </div>
 
-                {/* Right section */}
-                <div className="flex items-center gap-4">
-                    {/* Alerts */}
-                    <button className="relative p-2 rounded-lg hover:bg-[var(--accent)] text-[var(--muted-foreground)]">
-                        <span className="text-xl">🔔</span>
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-[var(--destructive)] rounded-full" />
-                    </button>
+                {/* Center: Masthead */}
+                <Link href="/" className="flex flex-col items-center group">
+                    <h1 className="text-4xl font-black tracking-tighter italic leading-none text-[var(--foreground)]">
+                        THE INVESTIGATION
+                    </h1>
+                    <span className="text-[10px] uppercase tracking-[0.4em] font-sans font-bold mt-1 text-[var(--muted-foreground)]">
+                        Connecting Global Truths
+                    </span>
+                </Link>
 
-                    {/* Theme toggle */}
+                {/* Right: Search + Subscribe */}
+                <div className="flex items-center gap-6">
                     <button
-                        className="p-2 rounded-lg hover:bg-[var(--accent)] text-[var(--muted-foreground)]"
-                        onClick={() => document.documentElement.classList.toggle('dark')}
+                        onClick={() => setIsSearchOpen(!isSearchOpen)}
+                        className="text-[var(--foreground)] hover:text-[var(--primary)]"
                     >
-                        <span className="text-xl">🌙</span>
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
                     </button>
-
-                    {/* User menu */}
                     <Link
-                        href="/login"
-                        className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--primary-foreground)] hover:opacity-90"
+                        href="/register"
+                        className="bg-[var(--foreground)] text-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider font-sans hover:bg-[var(--primary)] transition-colors"
                     >
-                        Sign In
+                        Subscribe
                     </Link>
                 </div>
             </div>
+
+            {/* Navigation */}
+            <nav className="border-t border-[var(--border)] bg-[var(--background)]">
+                <div className="max-w-7xl mx-auto px-6 py-3 flex justify-center gap-10">
+                    {navItems.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`nav-link ${pathname === item.href ? 'active' : ''}`}
+                        >
+                            {item.label}
+                        </Link>
+                    ))}
+                </div>
+            </nav>
+
+            {/* Search overlay */}
+            {isSearchOpen && (
+                <div className="absolute inset-x-0 top-full bg-white border-b border-[var(--border)] shadow-lg p-6">
+                    <div className="max-w-2xl mx-auto">
+                        <input
+                            type="text"
+                            placeholder="Search investigations, entities, events..."
+                            autoFocus
+                            className="w-full text-2xl font-serif border-b-2 border-[var(--foreground)] pb-4 bg-transparent outline-none placeholder:text-[var(--muted-foreground)]"
+                        />
+                        <div className="flex gap-4 mt-4 text-xs font-sans font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+                            <span>Recent:</span>
+                            <button className="hover:text-[var(--primary)]">Chip Shortage</button>
+                            <button className="hover:text-[var(--primary)]">Ukraine Conflict</button>
+                            <button className="hover:text-[var(--primary)]">Supply Chain</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </header>
     );
 }
