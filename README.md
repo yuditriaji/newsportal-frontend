@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📰 The Investigation — Frontend
 
-## Getting Started
+The user-facing web application for **The Investigation**, featuring an editorial design system, interactive impact mapping, and investigative workspaces.
 
-First, run the development server:
+## ⚡ Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS (Custom "Editorial" Theme)
+- **Auth**: Supabase Auth (SSR)
+- **Visualization**: React Flow + d3-force (Impact Map)
+- **Deployment**: Vercel
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Key Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🗺️ Impact Map
+Interactive visualization of global entity connections.
+- **Force-Directed Layout**: Automatically clusters related nodes.
+- **Dynamic Data**: Fetches real entities processed by the AI backend.
+- **Filtering**: Filter by Person, Company, Location, etc.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🕵️ Investigations Workspace
+Tools for journalists and analysts to track stories.
+- **Case Management**: Create and manage investigation files.
+- **Evidence Board**: Pin articles and notes to a case.
+- **Watchlist**: Track specific entities and get alerts.
 
-## Learn More
+### 📰 Editorial Experience
+- **Premium Design**: Serif typography (Newsreader) and clean layouts.
+- **Responsive**: Fully optimized for mobile and desktop.
+- **Smart Sidebar**: Context-aware sidebar showing trending impact chains.
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Setup & Installation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Clone the repository**
+   ```bash
+   git clone <repo-url>
+   cd newsportal-frontend
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+3. **Configure Environment**
+   Create a `.env.local` file:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
+   Visit `http://localhost:3000`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🏗️ Project Structure
+
+- `src/app`: App Router pages and layouts
+  - `/impact-map`: Visualization logic
+  - `/investigations`: Workspace pages
+  - `/article/[id]`: Article details
+- `src/components`: Reusable UI components
+  - `/graph`: React Flow graph components
+  - `/layout`: Header, Sidebar, Footer
+- `src/lib`: Utilities
+  - `/supabase`: Database clients (Client & Server)
+  - `/actions`: Server Actions for data mutation
+
+## 🚀 Deployment
+
+This project is optimized for **Vercel**.
+1. Import the repository in Vercel.
+2. Add the Environment Variables (`NEXT_PUBLIC_SUPABASE_...`).
+3. Deploy!

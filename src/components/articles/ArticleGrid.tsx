@@ -35,7 +35,7 @@ export function ArticleGrid({ articles, layout = 'featured' }: ArticleGridProps)
                     </div>
 
                     {/* Latest sidebar */}
-                    <div className="col-span-12 lg:col-span-4 border-l border-[var(--border)] pl-8">
+                    <div className="col-span-12 lg:col-span-4 lg:border-l lg:border-[var(--border)] lg:pl-8 pt-6 lg:pt-0">
                         <h3 className="section-title section-divider">
                             Latest Nodes
                         </h3>
