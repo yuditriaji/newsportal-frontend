@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import {
     ReactFlow,
     Node,
@@ -12,7 +12,16 @@ import {
     useEdgesState,
     MarkerType,
     Position,
+    ReactFlowProvider,
+    useReactFlow,
 } from '@xyflow/react';
+import {
+    forceSimulation,
+    forceLink,
+    forceManyBody,
+    forceCenter,
+    forceCollide
+} from 'd3-force';
 import '@xyflow/react/dist/style.css';
 
 interface Entity {
@@ -45,70 +54,104 @@ const nodeColors: Record<string, string> = {
     event: '#ef4444',       // red
 };
 
-function createNodesFromEntities(entities: Entity[]): Node[] {
-    const centerX = 400;
-    const centerY = 300;
-    const radius = 200;
+// Simulation Wrapper to access ReactFlow instance
+function Simulation({ entities, connections, setNodes, setEdges }: {
+    entities: Entity[],
+    connections: Connection[],
+    setNodes: any,
+    setEdges: any
+}) {
+    const { fitView } = useReactFlow();
 
-    return entities.map((entity, index) => {
-        const angle = (2 * Math.PI * index) / entities.length;
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
+    useEffect(() => {
+        const nodes = entities.map((e) => ({
+            x: Math.random() * 800,
+            y: Math.random() * 600,
+            ...e
+        }));
 
-        return {
-            id: entity.id,
-            position: { x, y },
-            data: {
-                label: entity.name,
-                type: entity.type,
-                articleCount: entity.articleCount || 0,
-            },
+        const links = connections.map((c) => ({
+            source: c.source,
+            target: c.target,
+            weight: c.weight || 1
+        }));
+
+        const simulation = forceSimulation(nodes as any)
+            .force('link', forceLink(links).id((d: any) => d.id).distance(150))
+            .force('charge', forceManyBody().strength(-500))
+            .force('center', forceCenter(400, 300))
+            .force('collide', forceCollide().radius(60));
+
+        simulation.on('tick', () => {
+            const flowNodes: Node[] = nodes.map((node: any) => ({
+                id: node.id,
+                position: { x: node.x, y: node.y },
+                data: {
+                    label: node.name,
+                    type: node.type,
+                    articleCount: node.articleCount || 0,
+                },
+                style: {
+                    background: nodeColors[node.type] || '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '10px 16px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    cursor: 'pointer',
+                    width: 'auto',
+                },
+                sourcePosition: Position.Right,
+                targetPosition: Position.Left,
+            }));
+
+            setNodes(flowNodes);
+        });
+
+        const flowEdges: Edge[] = connections.map((conn, index) => ({
+            id: `edge-${index}`,
+            source: conn.source,
+            target: conn.target,
+            label: conn.relationship,
+            type: 'default',
+            animated: Boolean(conn.weight && conn.weight > 0.7),
             style: {
-                background: nodeColors[entity.type] || '#6b7280',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '10px 16px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                cursor: 'pointer',
+                stroke: '#94a3b8',
+                strokeWidth: Math.max(2, (conn.weight || 0.5) * 4),
             },
-            sourcePosition: Position.Right,
-            targetPosition: Position.Left,
-        };
-    });
-}
+            labelStyle: {
+                fontSize: '10px',
+                fill: '#64748b',
+            },
+            markerEnd: {
+                type: MarkerType.ArrowClosed,
+                color: '#94a3b8',
+            },
+        }));
 
-function createEdgesFromConnections(connections: Connection[]): Edge[] {
-    return connections.map((conn, index) => ({
-        id: `edge-${index}`,
-        source: conn.source,
-        target: conn.target,
-        label: conn.relationship,
-        type: 'smoothstep',
-        animated: Boolean(conn.weight && conn.weight > 0.7),
-        style: {
-            stroke: '#94a3b8',
-            strokeWidth: Math.max(1, (conn.weight || 0.5) * 3),
-        },
-        labelStyle: {
-            fontSize: '10px',
-            fill: '#64748b',
-        },
-        markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: '#94a3b8',
-        },
-    }));
+        setEdges(flowEdges);
+
+        return () => {
+            simulation.stop();
+        };
+    }, [entities, connections, setNodes, setEdges]);
+
+    // Fit view after initial simulation settles slightly
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fitView({ padding: 0.2, duration: 1000 });
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [fitView, entities]);
+
+    return null;
 }
 
 export function ImpactGraph({ entities, connections, onNodeClick }: ImpactGraphProps) {
-    const initialNodes = useMemo(() => createNodesFromEntities(entities), [entities]);
-    const initialEdges = useMemo(() => createEdgesFromConnections(connections), [connections]);
-
-    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    const [nodes, setNodes, onNodesChange] = useNodesState([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
     const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
         const entity = entities.find((e) => e.id === node.id);
@@ -118,25 +161,33 @@ export function ImpactGraph({ entities, connections, onNodeClick }: ImpactGraphP
     }, [entities, onNodeClick]);
 
     return (
-        <div className="w-full h-full bg-slate-50 dark:bg-slate-900 rounded-lg overflow-hidden">
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onNodeClick={handleNodeClick}
-                fitView
-                attributionPosition="bottom-left"
-            >
-                <Background color="#e2e8f0" gap={16} />
-                <Controls
-                    className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                />
-                <MiniMap
-                    nodeColor={(node) => nodeColors[(node.data as any).type] || '#6b7280'}
-                    className="bg-white dark:bg-slate-800"
-                />
-            </ReactFlow>
+        <div className="w-full h-full bg-slate-50 dark:bg-slate-900 rounded-lg overflow-hidden border border-[var(--border)]">
+            <ReactFlowProvider>
+                <div className="w-full h-full">
+                    <Simulation
+                        entities={entities}
+                        connections={connections}
+                        setNodes={setNodes}
+                        setEdges={setEdges}
+                    />
+                    <ReactFlow
+                        nodes={nodes}
+                        edges={edges}
+                        onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
+                        onNodeClick={handleNodeClick}
+                        fitView
+                        attributionPosition="bottom-left"
+                    >
+                        <Background color="#94a3b8" gap={20} size={1} />
+                        <Controls className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700" />
+                        <MiniMap
+                            nodeColor={(node) => nodeColors[(node.data as any).type] || '#6b7280'}
+                            className="bg-white dark:bg-slate-800"
+                        />
+                    </ReactFlow>
+                </div>
+            </ReactFlowProvider>
         </div>
     );
 }

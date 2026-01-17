@@ -15,7 +15,7 @@ async function getEntitiesWithConnections() {
       type,
       article_entities (count)
     `)
-        .limit(30);
+        .limit(50);
 
     if (entitiesError) {
         console.error('Error fetching entities:', entitiesError);
@@ -34,7 +34,7 @@ async function getEntitiesWithConnections() {
     const { data: articleEntities, error: connError } = await supabase
         .from('article_entities')
         .select('article_id, entity_id')
-        .limit(200);
+        .limit(1000);
 
     if (connError) {
         console.error('Error fetching connections:', connError);
