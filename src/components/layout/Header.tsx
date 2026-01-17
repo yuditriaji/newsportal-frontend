@@ -83,7 +83,7 @@ export function Header() {
 
     return (
         <>
-            <header className="bg-white border-b border-[var(--border)] sticky top-0 z-50">
+            <header className={`bg-white border-b border-[var(--border)] sticky top-0 ${isMenuOpen ? 'z-[60]' : 'z-50'}`}>
                 {/* Top bar */}
                 <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
                     {/* Left: Menu + Date */}
@@ -140,36 +140,45 @@ export function Header() {
                 </div>
 
                 {/* Navigation - Desktop Only */}
-                <nav className="hidden md:block border-t border-[var(--border)] bg-[var(--background)]">
-                    <div className="max-w-7xl mx-auto px-6 py-3 flex justify-center gap-10">
-                        {topNavItems.map((item) => (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`nav-link ${pathname === item.href || pathname.startsWith(item.href) ? 'active' : ''}`}
-                            >
-                                {item.label}
-                            </Link>
-                        ))}
-                    </div>
-                </nav>
+                {!isMenuOpen && (
+                    <nav className="hidden md:block border-t border-[var(--border)] bg-[var(--background)]">
+                        <div className="max-w-7xl mx-auto px-6 py-3 flex justify-center gap-10">
+                            {topNavItems.map((item) => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`nav-link ${pathname === item.href || pathname.startsWith(item.href) ? 'active' : ''}`}
+                                >
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </div>
+                    </nav>
+                )}
             </header>
 
-            {/* Full-screen Menu Overlay (Inc.com style) */}
+            {/* Full-screen Menu Overlay */}
             {isMenuOpen && (
-                <div className="fixed inset-0 z-40 bg-white overflow-y-auto">
-                    {/* Close button area - top right */}
-                    <div className="sticky top-0 bg-white border-b border-[var(--border)] z-10">
-                        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
-                            <Link href="/" className="text-2xl font-black italic" onClick={() => setIsMenuOpen(false)}>
+                <div
+                    className="fixed inset-0 z-50 bg-[#0f172a] text-white overflow-y-auto"
+                    style={{ top: '0' }}
+                >
+                    {/* Overlay Header */}
+                    <div className="sticky top-0 bg-[#0f172a] border-b border-slate-700 z-10">
+                        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+                            <Link
+                                href="/"
+                                className="text-2xl md:text-3xl font-black italic text-white"
+                                onClick={() => setIsMenuOpen(false)}
+                            >
                                 THE INVESTIGATION
                             </Link>
                             <button
                                 onClick={() => setIsMenuOpen(false)}
-                                className="p-2 hover:bg-slate-100 rounded-full"
+                                className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors"
                                 aria-label="Close menu"
                             >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
@@ -177,35 +186,39 @@ export function Header() {
                     </div>
 
                     {/* Search Bar */}
-                    <div className="border-b border-[var(--border)] bg-slate-50">
-                        <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+                    <div className="bg-[#1e293b]">
+                        <div className="max-w-6xl mx-auto px-6 py-8">
                             <div className="relative">
+                                <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search"
-                                    className="w-full text-2xl md:text-4xl font-serif bg-transparent border-b-2 border-[var(--foreground)] pb-4 outline-none placeholder:text-slate-400"
+                                    placeholder="Search articles, entities, investigations..."
+                                    className="w-full pl-12 text-2xl md:text-3xl font-serif bg-transparent border-b-2 border-slate-600 focus:border-[var(--primary)] pb-4 outline-none placeholder:text-slate-500 text-white"
+                                    autoFocus
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Menu Categories Grid */}
-                    <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+                    <div className="max-w-6xl mx-auto px-6 py-12">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-16">
                             {menuSections.map((section) => (
                                 <div key={section.title}>
-                                    <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-6">
+                                    <h3 className="text-lg font-black uppercase tracking-wider text-[var(--primary)] mb-6">
                                         {section.title}
                                     </h3>
-                                    <ul className="space-y-2 md:space-y-3">
+                                    <ul className="space-y-4">
                                         {section.items.map((item) => (
                                             <li key={item.href}>
                                                 <Link
                                                     href={item.href}
                                                     onClick={() => setIsMenuOpen(false)}
-                                                    className="text-xs md:text-sm font-sans uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors"
+                                                    className="text-sm font-sans text-slate-300 hover:text-white hover:pl-2 transition-all block"
                                                 >
                                                     {item.label}
                                                 </Link>
@@ -217,18 +230,40 @@ export function Header() {
                         </div>
                     </div>
 
+                    {/* Trending Section */}
+                    <div className="border-t border-slate-700">
+                        <div className="max-w-6xl mx-auto px-6 py-10">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">Trending Now</h3>
+                            <div className="flex flex-wrap gap-3">
+                                {['Ukraine Conflict', 'AI Regulation', 'Climate Summit', 'Supply Chain', 'China Trade'].map((tag) => (
+                                    <Link
+                                        key={tag}
+                                        href={`/search?q=${encodeURIComponent(tag)}`}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded text-sm font-sans text-slate-300 hover:text-white transition-colors"
+                                    >
+                                        {tag}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Bottom CTA */}
-                    <div className="border-t border-[var(--border)] bg-slate-50">
-                        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <p className="text-sm font-sans text-[var(--muted-foreground)]">
-                                Get the daily briefing on global impacts.
-                            </p>
+                    <div className="bg-[var(--primary)]">
+                        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div>
+                                <h4 className="text-xl font-bold text-white mb-1">Stay Informed</h4>
+                                <p className="text-sm text-red-100">
+                                    Get the daily briefing on global impacts delivered to your inbox.
+                                </p>
+                            </div>
                             <Link
                                 href="/register"
                                 onClick={() => setIsMenuOpen(false)}
-                                className="bg-[var(--primary)] text-white px-6 py-3 text-sm font-bold uppercase tracking-wider font-sans hover:bg-red-700 transition-colors"
+                                className="bg-white text-[var(--primary)] px-8 py-3 text-sm font-bold uppercase tracking-wider font-sans hover:bg-slate-100 transition-colors rounded"
                             >
-                                Subscribe Now
+                                Subscribe Free
                             </Link>
                         </div>
                     </div>
