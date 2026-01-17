@@ -16,8 +16,27 @@ const menuItems = [
   { href: '/timeline', label: 'Master Timeline', icon: '📅' },
 ];
 
+const nodeColors: Record<string, string> = {
+  person: '#3b82f6',
+  company: '#8b5cf6',
+  location: '#22c55e',
+  commodity: '#f59e0b',
+  sector: '#ec4899',
+  policy: '#06b6d4',
+  event: '#ef4444',
+  other: '#64748b'
+};
+
+import { getTrendingEntities, TrendingEntity } from '@/lib/actions/entities';
+import { useEffect, useState } from 'react';
+
 export function Sidebar() {
   const pathname = usePathname();
+  const [chains, setChains] = useState<TrendingEntity[]>([]);
+
+  useEffect(() => {
+    getTrendingEntities(3).then(setChains);
+  }, []);
 
   return (
     <aside className="hidden lg:block w-80 border-l border-[var(--border)] bg-[var(--sidebar-bg)] text-[var(--sidebar-text)] font-sans h-full shrink-0">
@@ -27,33 +46,43 @@ export function Sidebar() {
           Active Impact Chains
         </h3>
 
-        {/* Impact chains */}
+        {/* Impact chains - using Real Entities */}
         <div className="space-y-6">
-          {impactChains.map((chain) => (
-            <Link
-              key={chain.id}
-              href={`/chain/${chain.id}`}
-              className="block group"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span
-                  className="text-[10px] font-bold"
-                  style={{ color: chain.color }}
+          {chains.length === 0 ? (
+            <div className="text-xs text-[var(--muted-foreground)] italic">Loading trends...</div>
+          ) : (
+            chains.map((chain) => {
+              const color = nodeColors[chain.type] || nodeColors.other;
+              // Mock progress based on count (cap at 100%)
+              const progress = Math.min((chain.articleCount || 0) * 20, 100);
+
+              return (
+                <Link
+                  key={chain.id}
+                  href={`/entity/${chain.id}`}
+                  className="block group"
                 >
-                  {chain.label}
-                </span>
-                <span className="text-[10px] text-[var(--muted-foreground)]">
-                  {chain.nodes} Connected Nodes
-                </span>
-              </div>
-              <div className="impact-bar">
-                <div
-                  className="impact-bar-fill"
-                  style={{ width: `${chain.progress}%`, background: chain.color }}
-                />
-              </div>
-            </Link>
-          ))}
+                  <div className="flex items-center justify-between mb-2">
+                    <span
+                      className="text-[10px] font-bold uppercase truncate max-w-[140px]"
+                      style={{ color }}
+                    >
+                      #{chain.name.replace(/\s+/g, '-')}
+                    </span>
+                    <span className="text-[10px] text-[var(--muted-foreground)]">
+                      {chain.articleCount} Articles
+                    </span>
+                  </div>
+                  <div className="impact-bar">
+                    <div
+                      className="impact-bar-fill"
+                      style={{ width: `${progress}%`, background: color }}
+                    />
+                  </div>
+                </Link>
+              );
+            })
+          )}
         </div>
 
         {/* Divider */}
