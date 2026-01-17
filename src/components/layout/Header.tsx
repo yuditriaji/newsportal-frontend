@@ -157,25 +157,25 @@ export function Header() {
                 )}
             </header>
 
-            {/* Full-screen Menu Overlay */}
+            {/* Full-screen Menu Overlay - Light Theme */}
             {isMenuOpen && (
                 <div
-                    className="fixed inset-0 z-50 bg-[#0f172a] text-white overflow-y-auto"
+                    className="fixed inset-0 z-50 bg-[var(--background)] text-[var(--foreground)] overflow-y-auto"
                     style={{ top: '0' }}
                 >
                     {/* Overlay Header */}
-                    <div className="sticky top-0 bg-[#0f172a] border-b border-slate-700 z-10">
+                    <div className="sticky top-0 bg-white border-b border-[var(--border)] z-10">
                         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
                             <Link
                                 href="/"
-                                className="text-2xl md:text-3xl font-black italic text-white"
+                                className="text-2xl md:text-3xl font-black italic text-[var(--foreground)]"
                                 onClick={() => setIsMenuOpen(false)}
                             >
                                 THE INVESTIGATION
                             </Link>
                             <button
                                 onClick={() => setIsMenuOpen(false)}
-                                className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors"
+                                className="p-2 hover:bg-slate-100 rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
                                 aria-label="Close menu"
                             >
                                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,10 +186,10 @@ export function Header() {
                     </div>
 
                     {/* Search Bar */}
-                    <div className="bg-[#1e293b]">
+                    <div className="bg-slate-50 border-b border-[var(--border)]">
                         <div className="max-w-6xl mx-auto px-6 py-8">
                             <div className="relative">
-                                <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                                 <input
@@ -197,7 +197,7 @@ export function Header() {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search articles, entities, investigations..."
-                                    className="w-full pl-12 text-2xl md:text-3xl font-serif bg-transparent border-b-2 border-slate-600 focus:border-[var(--primary)] pb-4 outline-none placeholder:text-slate-500 text-white"
+                                    className="w-full pl-12 text-2xl md:text-3xl font-serif bg-transparent border-b-2 border-[var(--border)] focus:border-[var(--primary)] pb-4 outline-none placeholder:text-[var(--muted-foreground)] text-[var(--foreground)]"
                                     autoFocus
                                 />
                             </div>
@@ -218,7 +218,7 @@ export function Header() {
                                                 <Link
                                                     href={item.href}
                                                     onClick={() => setIsMenuOpen(false)}
-                                                    className="text-sm font-sans text-slate-300 hover:text-white hover:pl-2 transition-all block"
+                                                    className="text-sm font-sans text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:pl-2 transition-all block"
                                                 >
                                                     {item.label}
                                                 </Link>
@@ -231,16 +231,16 @@ export function Header() {
                     </div>
 
                     {/* Trending Section */}
-                    <div className="border-t border-slate-700">
+                    <div className="border-t border-[var(--border)]">
                         <div className="max-w-6xl mx-auto px-6 py-10">
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">Trending Now</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-6">Trending Now</h3>
                             <div className="flex flex-wrap gap-3">
                                 {['Ukraine Conflict', 'AI Regulation', 'Climate Summit', 'Supply Chain', 'China Trade'].map((tag) => (
                                     <Link
                                         key={tag}
                                         href={`/search?q=${encodeURIComponent(tag)}`}
                                         onClick={() => setIsMenuOpen(false)}
-                                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded text-sm font-sans text-slate-300 hover:text-white transition-colors"
+                                        className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded text-sm font-sans text-[var(--foreground)] transition-colors"
                                     >
                                         {tag}
                                     </Link>
