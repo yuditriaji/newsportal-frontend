@@ -2,14 +2,21 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
 export async function middleware(request: NextRequest) {
+    // Skip if Supabase not configured
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+        // Supabase not configured, allow request to proceed
+        return NextResponse.next();
+    }
+
     let supabaseResponse = NextResponse.next({
         request,
     });
 
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
+    try {
+        const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
             cookies: {
                 getAll() {
                     return request.cookies.getAll();
@@ -26,38 +33,42 @@ export async function middleware(request: NextRequest) {
                     );
                 },
             },
+        });
+
+        // Refresh session if expired
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
+        // Protected routes
+        const protectedRoutes = ['/investigations', '/watchlist', '/settings'];
+        const isProtectedRoute = protectedRoutes.some((route) =>
+            request.nextUrl.pathname.startsWith(route)
+        );
+
+        if (isProtectedRoute && !user) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/login';
+            url.searchParams.set('redirect', request.nextUrl.pathname);
+            return NextResponse.redirect(url);
         }
-    );
 
-    // Refresh session if expired
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+        // Redirect logged-in users away from auth pages
+        const authRoutes = ['/login', '/register'];
+        const isAuthRoute = authRoutes.some((route) =>
+            request.nextUrl.pathname.startsWith(route)
+        );
 
-    // Protected routes
-    const protectedRoutes = ['/investigations', '/watchlist', '/settings'];
-    const isProtectedRoute = protectedRoutes.some((route) =>
-        request.nextUrl.pathname.startsWith(route)
-    );
+        if (isAuthRoute && user) {
+            return NextResponse.redirect(new URL('/', request.url));
+        }
 
-    if (isProtectedRoute && !user) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/login';
-        url.searchParams.set('redirect', request.nextUrl.pathname);
-        return NextResponse.redirect(url);
+        return supabaseResponse;
+    } catch (error) {
+        // If Supabase fails, allow request to proceed
+        console.error('Middleware error:', error);
+        return NextResponse.next();
     }
-
-    // Redirect logged-in users away from auth pages
-    const authRoutes = ['/login', '/register'];
-    const isAuthRoute = authRoutes.some((route) =>
-        request.nextUrl.pathname.startsWith(route)
-    );
-
-    if (isAuthRoute && user) {
-        return NextResponse.redirect(new URL('/', request.url));
-    }
-
-    return supabaseResponse;
 }
 
 export const config = {
