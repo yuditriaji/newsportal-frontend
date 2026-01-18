@@ -7,14 +7,80 @@ import { usePathname } from 'next/navigation';
 // News categories from implementation plan with sub-categories
 const menuSections = [
     {
-        title: 'News',
+        title: 'World',
         items: [
-            { href: '/category/world', label: 'World' },
-            { href: '/category/geopolitics', label: 'Geopolitics' },
-            { href: '/category/business', label: 'Business' },
-            { href: '/category/technology', label: 'Technology' },
-            { href: '/category/politics', label: 'Politics' },
-            { href: '/category/science', label: 'Science' },
+            { href: '/category/world', label: 'All World News' },
+            { href: '/category/americas', label: 'Americas' },
+            { href: '/category/europe', label: 'Europe' },
+            { href: '/category/asia-pacific', label: 'Asia Pacific' },
+            { href: '/category/middle-east', label: 'Middle East' },
+            { href: '/category/africa', label: 'Africa' },
+            { href: '/category/oceania', label: 'Oceania' },
+        ]
+    },
+    {
+        title: 'Geopolitics',
+        items: [
+            { href: '/category/geopolitics', label: 'All Geopolitics' },
+            { href: '/category/conflicts', label: 'Conflicts & Wars' },
+            { href: '/category/sanctions', label: 'Sanctions & Embargoes' },
+            { href: '/category/international-relations', label: 'International Relations' },
+            { href: '/category/alliances', label: 'Alliances & Treaties' },
+            { href: '/category/trade-wars', label: 'Trade Wars' },
+            { href: '/category/territorial-disputes', label: 'Territorial Disputes' },
+        ]
+    },
+    {
+        title: 'Business',
+        items: [
+            { href: '/category/business', label: 'All Business' },
+            { href: '/category/markets', label: 'Markets' },
+            { href: '/category/economy', label: 'Economy' },
+            { href: '/category/trade', label: 'Trade' },
+            { href: '/category/companies', label: 'Companies' },
+            { href: '/category/commodities', label: 'Commodities' },
+            { href: '/category/fintech', label: 'Crypto & Fintech' },
+        ]
+    },
+    {
+        title: 'Technology',
+        items: [
+            { href: '/category/technology', label: 'All Technology' },
+            { href: '/category/big-tech', label: 'Big Tech' },
+            { href: '/category/ai', label: 'AI & Machine Learning' },
+            { href: '/category/cybersecurity', label: 'Cybersecurity' },
+            { href: '/category/startups', label: 'Startups' },
+            { href: '/category/consumer-tech', label: 'Consumer Tech' },
+        ]
+    },
+    {
+        title: 'Politics',
+        items: [
+            { href: '/category/politics', label: 'All Politics' },
+            { href: '/category/government', label: 'Government' },
+            { href: '/category/elections', label: 'Elections' },
+            { href: '/category/policy', label: 'Policy' },
+            { href: '/category/defense', label: 'Defense & Security' },
+        ]
+    },
+    {
+        title: 'Science',
+        items: [
+            { href: '/category/science', label: 'All Science' },
+            { href: '/category/climate', label: 'Climate & Environment' },
+            { href: '/category/energy-transition', label: 'Energy Transition' },
+            { href: '/category/health', label: 'Health & Medicine' },
+            { href: '/category/space', label: 'Space' },
+            { href: '/category/research', label: 'Research' },
+        ]
+    },
+    {
+        title: 'Opinion',
+        items: [
+            { href: '/category/opinion', label: 'All Opinion' },
+            { href: '/category/editorials', label: 'Editorials' },
+            { href: '/category/analysis', label: 'Expert Analysis' },
+            { href: '/category/fact-check', label: 'Fact Check' },
         ]
     },
     {
@@ -23,25 +89,6 @@ const menuSections = [
             { href: '/impact-map', label: 'Impact Map' },
             { href: '/investigations', label: 'My Investigations' },
             { href: '/watchlist', label: 'Watchlist' },
-        ]
-    },
-    {
-        title: 'Regions',
-        items: [
-            { href: '/category/americas', label: 'Americas' },
-            { href: '/category/europe', label: 'Europe' },
-            { href: '/category/asia-pacific', label: 'Asia Pacific' },
-            { href: '/category/middle-east', label: 'Middle East' },
-            { href: '/category/africa', label: 'Africa' },
-        ]
-    },
-    {
-        title: 'Topics',
-        items: [
-            { href: '/category/climate', label: 'Climate & Environment' },
-            { href: '/category/commodities', label: 'Commodities' },
-            { href: '/category/defense', label: 'Defense & Security' },
-            { href: '/category/fintech', label: 'Fintech & Crypto' },
         ]
     },
 ];
