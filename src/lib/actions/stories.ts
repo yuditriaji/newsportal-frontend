@@ -178,10 +178,11 @@ export async function getStoryBySlug(slug: string): Promise<StoryDetail | null> 
       )
     `)
         .eq('slug', slug)
+        .eq('status', 'published')
         .single();
 
     if (error || !story) {
-        console.error('Error fetching story:', error);
+        console.error('Error fetching story by slug:', slug, error);
         return null;
     }
 

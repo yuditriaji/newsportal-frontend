@@ -14,7 +14,7 @@ import { ImpactSummary } from '@/components/stories/ImpactMeter';
 export const dynamic = 'force-dynamic';
 
 interface StoryPageProps {
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 }
 
 function formatDate(dateString: string): string {
@@ -50,7 +50,8 @@ function SynthesizedContent({
 }
 
 export default async function StoryPage({ params }: StoryPageProps) {
-    const story = await getStoryBySlug(params.slug);
+    const { slug } = await params;
+    const story = await getStoryBySlug(slug);
 
     if (!story) {
         notFound();
